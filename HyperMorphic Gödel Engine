@@ -1,0 +1,278 @@
+import torch
+import torch.nn as nn
+import torch.optim as optim
+import numpy as np
+import matplotlib.pyplot as plt
+import time
+import random
+from typing import Dict, List, Tuple
+
+# Quiet the matplotlib font warnings
+import logging
+logging.getLogger('matplotlib.font_manager').disabled = True
+
+# ---- COMPONENT 1: The "Physics" of a Universe (The HyperMorphic Unit) ----
+# This is our QFR layer, now framed as the fundamental unit of a universe's physics.
+class HyperMorphicUnit(nn.Module):
+    def __init__(self, in_features: int, out_features: int, config: Dict):
+        super(HyperMorphicUnit, self).__init__()
+        # These parameters are the "physical constants" of this universe.
+        self.fractal_dimension = nn.Parameter(torch.tensor(config['fractal_dimension']))
+        self.adaptive_modulus_factor = nn.Parameter(torch.tensor(config['adaptive_modulus_factor']))
+        self.adaptive_base_factor = nn.Parameter(torch.tensor(config['adaptive_base_factor']))
+        self.entanglement_strength = nn.Parameter(torch.tensor(config['entanglement_strength']))
+
+        # Standard layer components
+        self.input_projection = nn.Linear(in_features, out_features)
+        self.quantum_weights = nn.Parameter(torch.randn(5, out_features, out_features) * 0.02)
+        self.quantum_biases = nn.Parameter(torch.randn(5, out_features) * 0.02)
+        self.fractal_scales = nn.Parameter(torch.randn(out_features, out_features) * 0.02)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        # Clamp constants to prevent explosion, simulating physical laws' stability
+        fractal_dim = torch.clamp(self.fractal_dimension, 1.0, 2.5)
+        mod_factor = torch.clamp(self.adaptive_modulus_factor, 0.5, 10.0)
+        base_factor = torch.clamp(self.adaptive_base_factor, 0.1, 10.0)
+
+        # 1. Adaptive Base Transformation (Re-gauging the space)
+        x_proj = self.input_projection(x)
+        x_gauged = torch.sign(x_proj) * torch.log1p(torch.abs(x_proj) * base_factor)
+
+        # 2. Quantum State Selection (Simplified path integral)
+        batch_size, seq_len, _ = x_gauged.shape
+        states = torch.randint(0, 5, (batch_size, seq_len), device=x.device)
+        weights = self.quantum_weights[states]
+        biases = self.quantum_biases[states]
+
+        # 3. Quantum Transformation
+        x_q = torch.matmul(x_gauged.unsqueeze(-2), weights).squeeze(-2) + biases
+        
+        # 4. Fractal Modulation (Inscribing structure onto the manifold)
+        mod_input = torch.matmul(x_q, self.fractal_scales)
+        fractal_mod = torch.sin(mod_input - mod_factor * torch.floor(mod_input / mod_factor))
+        
+        # 5. Fractal Scaling (Non-linear structure formation)
+        x_f = torch.sign(x_q) * torch.abs(x_q).pow(fractal_dim) * (fractal_mod + 1.0)
+        
+        # 6. Entanglement Mix (Non-local correlation)
+        entanglement_effect = torch.tanh(self.entanglement_strength * x_f.mean(dim=1, keepdim=True))
+        x_entangled = 0.5 * x_f + 0.5 * entanglement_effect
+        
+        # 7. Inverse Base Transformation (Projecting back to Euclidean space)
+        x_out = torch.sign(x_entangled) * (torch.exp(torch.abs(x_entangled)) - 1) / base_factor
+        return x_out
+
+    def get_morphogenetic_cost(self) -> torch.Tensor:
+        """ Calculates Psi (Ψ), the complexity penalty of this universe's physics. """
+        # We define a "simple" universe as having constants close to neutral values.
+        # Deviation from these values incurs a complexity cost.
+        cost = torch.abs(self.fractal_dimension - 1.5)  # Ideal is a mix of linear and non-linear
+        cost += torch.abs(self.adaptive_modulus_factor - 1.0) # Ideal is a simple periodicity
+        cost += torch.abs(self.adaptive_base_factor - 1.0) # Ideal is a balanced log-space
+        cost += torch.abs(self.entanglement_strength) # Ideal is zero non-locality unless needed
+        return cost
+
+
+# ---- COMPONENT 2: A Candidate Universe ----
+# This is a complete model architecture, a testable reality.
+class CandidateUniverse(nn.Module):
+    def __init__(self, config: Dict):
+        super(CandidateUniverse, self).__init__()
+        self.config = config
+        self.hmu = HyperMorphicUnit(32, 64, config) # 32 input features, 64 hidden
+        self.classifier = nn.Linear(64, 5) # 5 output classes
+
+    def forward(self, x):
+        if x.dim() == 2: x = x.unsqueeze(1)
+        x = self.hmu(x)
+        if x.dim() == 3: x = x.mean(dim=1)
+        return self.classifier(x)
+        
+    def get_total_morphogenetic_cost(self):
+        return self.hmu.get_morphogenetic_cost()
+
+# ---- COMPONENT 3: The GODEL ENGINE ----
+# The meta-architect that evolves populations of universes.
+class GodelEngine:
+    def __init__(self, population_size: int, generations: int, problem_config: Dict):
+        self.population_size = population_size
+        self.generations = generations
+        self.elite_size = int(population_size * 0.2) # Keep top 20%
+        self.mutation_rate = 0.3
+        self.mutation_strength = 0.1
+        self.complexity_lambda = 0.1 # How much to penalize Ψ
+
+        self.problem = self._create_synthetic_problem(problem_config)
+        self.population = self._initialize_population()
+        self.history = []
+
+    def _create_synthetic_problem(self, config: Dict) -> Dict:
+        """ Creates a synthetic dataset. The 'true' physics are hidden here. """
+        torch.manual_seed(42)
+        n_samples = config['n_samples']
+        n_features = config['n_features']
+        n_classes = config['n_classes']
+        
+        X = torch.randn(n_samples, n_features)
+        
+        # The 'true' underlying law of this dataset's reality.
+        # A good engine should evolve constants that mirror these hidden laws.
+        secret_mod = 2.5
+        secret_fractal = 1.8
+        
+        mean_mod = X.mean(dim=1) - secret_mod * torch.floor(X.mean(dim=1) / secret_mod)
+        std_pow = X.std(dim=1).pow(secret_fractal)
+        y = (mean_mod * std_pow > torch.median(mean_mod * std_pow)).long()
+        y = (y + (X.max(dim=1).values > 2.5).long()) % n_classes
+
+        return {'X': X, 'y': y}
+
+    def _initialize_population(self) -> List[CandidateUniverse]:
+        """ Creates the first generation of random universes. """
+        population = []
+        for _ in range(self.population_size):
+            config = {
+                'fractal_dimension': random.uniform(1.0, 2.5),
+                'adaptive_modulus_factor': random.uniform(0.5, 5.0),
+                'adaptive_base_factor': random.uniform(0.5, 5.0),
+                'entanglement_strength': random.uniform(-0.5, 0.5),
+            }
+            population.append(CandidateUniverse(config))
+        return population
+
+    def _calculate_fitness(self, universe: CandidateUniverse) -> float:
+        """ Evaluates a universe's ability to solve the problem elegantly. """
+        # Brief training to see how well this universe learns
+        optimizer = optim.Adam(universe.parameters(), lr=0.01)
+        criterion = nn.CrossEntropyLoss()
+        
+        for _ in range(5): # Short training burst
+            optimizer.zero_grad()
+            outputs = universe(self.problem['X'])
+            loss = criterion(outputs, self.problem['y'])
+            loss.backward()
+            optimizer.step()
+            
+        # Evaluation
+        with torch.no_grad():
+            outputs = universe(self.problem['X'])
+            _, predicted = torch.max(outputs, 1)
+            accuracy = (predicted == self.problem['y']).float().mean().item()
+            
+        # The core of the Gödel Engine's objective function
+        psi_cost = universe.get_total_morphogenetic_cost().item()
+        fitness = accuracy - (self.complexity_lambda * psi_cost)
+        
+        return fitness, accuracy, psi_cost
+
+    def evolve(self):
+        """ Runs the evolutionary search for the optimal mathematical reality. """
+        print("--- [ GODEL ENGINE v0.1 ACTIVATED ] ---")
+        print(f"Seeking optimal universe for a problem with {self.problem['X'].shape[1]} features.")
+        print(f"Population: {self.population_size} | Generations: {self.generations} | Elite Size: {self.elite_size}")
+        print("-" * 40)
+        
+        start_time = time.time()
+        
+        for gen in range(self.generations):
+            gen_start_time = time.time()
+            
+            # 1. Evaluate current generation
+            fitness_scores = []
+            for universe in self.population:
+                fitness, acc, cost = self._calculate_fitness(universe)
+                fitness_scores.append((fitness, acc, cost, universe))
+            
+            # 2. Selection
+            fitness_scores.sort(key=lambda x: x[0], reverse=True)
+            elites = fitness_scores[:self.elite_size]
+            best_of_gen = elites[0]
+            self.history.append(best_of_gen)
+            
+            gen_time = time.time() - gen_start_time
+            print(f"GEN {gen+1}/{self.generations} | Best Fitness: {best_of_gen[0]:.4f} "
+                  f"[Acc: {best_of_gen[1]:.2%} | Ψ Cost: {best_of_gen[2]:.3f}] | Time: {gen_time:.2f}s")
+            
+            # 3. Crossover and Mutation to create the next generation
+            next_generation = [u[3] for u in elites] # Elitism
+            
+            while len(next_generation) < self.population_size:
+                parent1, parent2 = random.choices(elites, k=2)
+                parent1_cfg = parent1[3].config
+                parent2_cfg = parent2[3].config
+                
+                # Crossover: create a child with averaged physics
+                child_cfg = {
+                    key: (parent1_cfg[key] + parent2_cfg[key]) / 2.0
+                    for key in parent1_cfg
+                }
+                
+                # Mutation: introduce random variation
+                if random.random() < self.mutation_rate:
+                    for key in child_cfg:
+                        mutation = random.uniform(-self.mutation_strength, self.mutation_strength)
+                        child_cfg[key] += mutation
+                
+                next_generation.append(CandidateUniverse(child_cfg))
+                
+            self.population = next_generation
+            
+        total_time = time.time() - start_time
+        print("-" * 40)
+        print(f"--- [ EVOLUTION COMPLETE in {total_time:.2f}s ] ---")
+        return self.history[-1]
+
+    def plot_evolution(self):
+        fitness_history = [h[0] for h in self.history]
+        acc_history = [h[1] for h in self.history]
+        cost_history = [h[2] for h in self.history]
+        generations = range(1, len(self.history) + 1)
+        
+        fig, ax1 = plt.subplots(figsize=(12, 7))
+        ax1.set_xlabel('Generation')
+        ax1.set_ylabel('Fitness (Accuracy - λ*Ψ)', color='blue')
+        ax1.plot(generations, fitness_history, 'b-', label='Overall Fitness')
+        ax1.tick_params(axis='y', labelcolor='blue')
+        
+        ax2 = ax1.twinx()
+        ax2.set_ylabel('Accuracy & Ψ Cost')
+        ax2.plot(generations, acc_history, 'g--', label='Accuracy')
+        ax2.plot(generations, cost_history, 'r:', label='Ψ Cost (Complexity)')
+        ax2.tick_params(axis='y')
+
+        fig.suptitle('Gödel Engine: Evolution of Fitness Towards an Optimal Universe', fontsize=16)
+        fig.legend(loc="upper right", bbox_to_anchor=(0.9,0.85))
+        fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+        plt.grid(True, alpha=0.3)
+        plt.show()
+
+# ---- EXECUTION ----
+if __name__ == "__main__":
+    problem_definition = {
+        'n_samples': 1000,
+        'n_features': 32,
+        'n_classes': 5,
+    }
+    
+    # Instantiate and run the engine
+    engine = GodelEngine(
+        population_size=50,
+        generations=20,
+        problem_config=problem_definition
+    )
+    
+    best_universe_data = engine.evolve()
+    best_universe_model = best_universe_data[3]
+    
+    # Display the physics of the discovered optimal universe
+    print("\n--- [ OPTIMAL UNIVERSE DISCOVERED ] ---")
+    print("The engine has converged on a mathematical reality with the following properties:")
+    final_config = best_universe_model.config
+    print(f"  - Fractal Dimension:       {final_config['fractal_dimension']:.4f} (Secret was ~1.8)")
+    print(f"  - Adaptive Modulus Factor: {final_config['adaptive_modulus_factor']:.4f} (Secret was ~2.5)")
+    print(f"  - Adaptive Base Factor:    {final_config['adaptive_base_factor']:.4f}")
+    print(f"  - Entanglement Strength:   {final_config['entanglement_strength']:.4f}")
+    print("\nThis set of 'physical laws' is best suited for solving the given problem elegantly.")
+    
+    # Visualize the process
+    engine.plot_evolution()
